@@ -40,18 +40,44 @@ refresh_maps: true
 pre_tag_map: /etc/pmacct/int_map 
 plugin_pipe_size: {{ pipe_size*1024*1024 }}
 plugin_buffer_size: {{pipe_size*1024 }}
+syslog: {{ syslog-facility | |default('daemon')}}
+plugins:{{ plugins|join(', ') }}
 aggregate: tag,src_mac,dst_mac,vlan,src_host,dst_host,
 src_port,dst_port,proto,tos,flows
 {% if networks -%}
 ,src_as,dst_as 
-networks_file: {{networks_file}} {% endif -%} 
+networks_file: {{networks_file}}
+{% endif -%} 
+# netflow 
+{%- for server in netflow.servers %}
+{%- for row in netflow %}
+nfprobe_receiver: {{ server.ip}}:{{ server.port | default(2055)}}
+nfprobe_version: {{ row.version | default(9) }}
+nfprobe_source_ip: {{ row.source-ip }}
+# timeouts
+nfprobe_timeouts: 
+{%- if row.icmp %}icmp={{ row.icmp | default(300)}}:{% endif -%}
+{%- if row.expiry-interval %}expint={{ row.expiry-interval | default(60)}}:{% endif -%}
+{%- if row.tcp-fin %}tcp.fin={{ row.tcp-fin | default(300)}}:{% endif -%}
+{%- if row.flow-generic %}general={{ row.flow-generic| default(3600)}}: {% endif -%}
+{%- if row.max-active-life %}maxlife={{ row.max-active-life | default(604800)}}:{% endif -%}
+{%- if row.tcp-rst %}tcp.rst={{ row.tcp-rst | default(120)}}:{% endif -%}
+{%- if row.udp %}udp={{ row.udp | default(300)}}: {% endif -%}
+{%- if row.tcp-generic %}udp={{ row.udp | default(3600)}}: {% endif -%}
+{%- if row.tcp-generic %}udp={{ row.udp | default(3600)}}: {% endif -%}
+{% if row.max-flows %}nfprobe_maxflows: {{ row.row.max-flows }}{% endif %}
+{% if row.sampling-rate %}sampling_rate: {{ row.row.sampling-rate }}{% endif %}
+{% endfor -%}
+{% endfor -%}
+# sflow
+
 """
 
 default_config_data = {
     'interfaces': [],
     'netflow': [],
     'sflow': [],
-
+    'plugins': [],
 }
 
 
@@ -123,6 +149,8 @@ def get_config():
             netflow['servers'].append(server)
 
         flowacc['netflow'] = netflow
+        flowacc['plugins'].append('netflow')
+
 
     if conf.exists('sflow'):
         sflow = {}
@@ -141,6 +169,8 @@ def get_config():
                 server['port'] = port
             sflow['servers'].append(server)
         flowacc['sflow'] = sflow
+        flowacc['plugins'].append('sflow')
+
 
     if os.path.exists(networks_file):
         flowacc['networks_file'] = networks_file
