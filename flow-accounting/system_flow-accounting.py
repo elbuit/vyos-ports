@@ -191,6 +191,9 @@ def verify(flowacc):
 
     if flowacc['sflow'] and not len(flowacc['sflow']['servers']):
         raise ConfigError('At least one sflow server should be configured')
+    if not len(flowacc['sflow']['servers']) and not len(flowacc['netflow']['servers']):
+        raise ConfigError('No sflow or netflow exporter selected: You need to '
+                          'select at least one')
 
     return None
 
