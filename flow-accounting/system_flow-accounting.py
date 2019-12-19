@@ -50,24 +50,21 @@ networks_file: {{networks_file}}
 {% endif -%} 
 # netflow 
 {%- for server in netflow.servers %}
-{%- for row in netflow %}
-nfprobe_receiver: {{ server.ip}}:{{ server.port | default(2055)}}
-nfprobe_version: {{ row.version | default(9) }}
-nfprobe_source_ip: {{ row.source-ip }}
+nfprobe_receiver: {{ server[ip]}}:{{ server[port] | default(2055)}}
+nfprobe_version: {{ netflow[version] | default(9) }}
+nfprobe_source_ip: {{ netflow[source-ip] }}
 # timeouts
 nfprobe_timeouts: 
-{%- if row.icmp %}icmp={{ row.icmp | default(300)}}:{% endif -%}
-{%- if row.expiry-interval %}expint={{ row.expiry-interval | default(60)}}:{% endif -%}
-{%- if row.tcp-fin %}tcp.fin={{ row.tcp-fin | default(300)}}:{% endif -%}
-{%- if row.flow-generic %}general={{ row.flow-generic| default(3600)}}: {% endif -%}
-{%- if row.max-active-life %}maxlife={{ row.max-active-life | default(604800)}}:{% endif -%}
-{%- if row.tcp-rst %}tcp.rst={{ row.tcp-rst | default(120)}}:{% endif -%}
-{%- if row.udp %}udp={{ row.udp | default(300)}}: {% endif -%}
-{%- if row.tcp-generic %}udp={{ row.udp | default(3600)}}: {% endif -%}
-{%- if row.tcp-generic %}udp={{ row.udp | default(3600)}}: {% endif -%}
-{% if row.max-flows %}nfprobe_maxflows: {{ row.row.max-flows }}{% endif %}
-{% if row.sampling-rate %}sampling_rate: {{ row.row.sampling-rate }}{% endif %}
-{% endfor -%}
+{%- if netflow[icmp] %}icmp={{ netflow[icmp] | default(300)}}:{% endif -%}
+{%- if netflow[expiry-interval] %}expint={{ netflow[expiry-interval] | default(60)}}:{% endif -%}
+{%- if netflow[tcp-fin] %}tcp.fin={{ netflow[tcp-fin] | default(300)}}:{% endif -%}
+{%- if netflow[flow-generic] %}general={{ netflow[flow-generic]| default(3600)}}: {% endif -%}
+{%- if netflow[max-active-life] %}maxlife={{ netflow[max-active-life] | default(604800)}}:{% endif -%}
+{%- if netflow[tcp-rst] %}tcp.rst={{ netflow[tcp-rst] | default(120)}}:{% endif -%}
+{%- if netflow[udp] %}udp={{ netflow[udp] | default(300)}}: {% endif -%}
+{%- if netflow[tcp-generic] %}tcp={{ netflow[tcp] | default(3600)}}: {% endif -%}
+{% if netflow[max-flows] %}nfprobe_maxflows: {{ netflow[max-flows] }}{% endif %}
+{% if netflow[sampling-rate] %}sampling_rate: {{ netflow[sampling-rate] }}{% endif %}
 {% endfor -%}
 # sflow
 
